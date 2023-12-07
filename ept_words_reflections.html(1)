@@ -1,0 +1,192 @@
+<h1>GEPT Words 單字測驗 ASP.NET 程式開發心得</h1>
+    作者：CBF110052 陳怡安
+
+
+    <h2>開發思路與解決方案</h2>
+    在這裡，你可以描述你在開發過程中的思考過程，以及你如何解決問題的。
+    <h3>開發過程</h3>
+    開發時，遇到問題嘗試後還是無法執行，會使用new bing，在進行更改
+    <h3>解決策略</h3>
+    使用new bing，和觀看以前的影片
+    <h2>使用的技術與引用來源</h2>
+    在這裡，你可以列出你在開發過程中使用到的技術，以及你參考的資料來源。
+    <h3>使用的技術</h3>
+
+    <h3>引用的資源</h3>
+    new bing
+
+    <h2>遇到的問題與解決方法</h2>
+    <h3>遇到的問題</h3>
+    1.按NextButton和PreviousButton下面會呈現第一筆單字的英文中文對應及超連結。一開始執行不會顯示，要先按往後10個再往前10個，才會顯示最一開始的第一筆單字的英文中文對應及超連結。
+    2.按下一題會判斷答對或答錯，答錯時並提供正確答案。第一個顯示的單字，不會測驗到，導致總共出現11個測驗。
+    <h3>解決的方法</h3>
+    1.新增一個 UpdateCambridgeText();方法
+    2.將選擇的索引添加到已選擇的索引列表中
+
+    <h2>修改後的程式內容</h2>
+    <h3>修改的部分</h3>
+    1.
+    <pre>
+    protected void Page_Load(object sender, EventArgs e)
+    {
+    if (!IsPostBack)
+    {
+    BindDropDownList();
+    UpdateCambridgeText();
+
+    Button1.Visible = false;
+    HyperLink1.Visible = false;
+    Literal2.Visible = false;}
+    }
+
+    private void UpdateCambridgeText()
+    {
+    if (CBF110052_DDL1.Items.Count > 0)
+    {
+    string firstWord = CBF110052_DDL1.Items[0].Text;
+    string firstValue = CBF110052_DDL1.Items[0].Value;
+
+    CBF110052_cambridge.Text = $"<a href='https://dictionary.cambridge.org/dictionary/english/{firstWord}'>{firstWord}</a>=>{firstValue}<br />";
+    }
+    </pre>
+    2.
+    <pre>
+    protected void CBF110052_testBtn_Click(object sender, EventArgs e)
+    {
+        
+       CBF110052_MV1.ActiveViewIndex = 1;
+
+       Random rnd = new Random();
+       int selectedIndex = rnd.Next(CBF110052_DDL1.Items.Count);
+       ListItem selectedWordItem = CBF110052_DDL1.Items[selectedIndex];
+
+       List<int> selectedIndices = ViewState["SelectedIndices"] as List<int> ?? new List<int>();
+       selectedIndices.Add(selectedIndex);
+       ViewState["SelectedIndices"] = selectedIndices;
+
+       CBF110052_ch_hint.Text = selectedWordItem.Value;
+
+      string selectedWord = selectedWordItem.Text;
+      string maskedWord = selectedWord[0] + string.Concat(Enumerable.Repeat(" _", selectedWord.Length - 1));
+      CBF110052_input.Text = maskedWord;
+
+      ViewState["PreviousWord"] = selectedWord;
+       }
+    </pre>
+    <h3>程式碼說明</h3>
+    紅字是新增的程式碼
+
+    <pre>
+    1.
+    protected void Page_Load(object sender, EventArgs e)
+    {
+    if (!IsPostBack)
+    {
+    BindDropDownList();
+    <p style="color:darkred;">
+    // 頁面一開始執行時就可以顯示第一筆單字的英文中文對應及超連結
+    UpdateCambridgeText();
+    </p>
+    Button1.Visible = false;
+    HyperLink1.Visible = false;
+    Literal2.Visible = false;}
+    }
+    <p style="color:darkred;">
+    private void UpdateCambridgeText()
+    {
+    if (CBF110052_DDL1.Items.Count > 0)
+    {
+    // 取得第一個單字的英文中文對應及超連結
+    string firstWord = CBF110052_DDL1.Items[0].Text;
+    string firstValue = CBF110052_DDL1.Items[0].Value;
+
+    // 顯示第一個單字的英文中文對應及超連結
+    CBF110052_cambridge.Text = $"<a href='https://dictionary.cambridge.org/dictionary/english/{firstWord}'>{firstWord}</a>=>{firstValue}<br />";
+    }
+    </p>
+    </pre>
+    2.
+    <pre>
+    protected void CBF110052_testBtn_Click(object sender, EventArgs e)
+    {
+        
+       CBF110052_MV1.ActiveViewIndex = 1;
+
+       Random rnd = new Random();
+       int selectedIndex = rnd.Next(CBF110052_DDL1.Items.Count);
+       ListItem selectedWordItem = CBF110052_DDL1.Items[selectedIndex];
+    <p style="color:darkred;">
+       //這段程式碼會將選擇的索引添加到 selectedIndices 中，並將這個列表儲存到 ViewState 中
+       List<int> selectedIndices = ViewState["SelectedIndices"] as List<int> ?? new List<int>();
+       selectedIndices.Add(selectedIndex);
+       ViewState["SelectedIndices"] = selectedIndices;
+       </p>
+       CBF110052_ch_hint.Text = selectedWordItem.Value;
+
+      string selectedWord = selectedWordItem.Text;
+      string maskedWord = selectedWord[0] + string.Concat(Enumerable.Repeat(" _", selectedWord.Length - 1));
+      CBF110052_input.Text = maskedWord;
+
+      ViewState["PreviousWord"] = selectedWord;
+       }
+
+    </pre>
+    <h2>程式執行畫面</h2>
+    在這裡，你可以分享你的程式執行畫面，並解釋每個畫面的功能。
+    <h3>功能介紹</h3>
+    <pre>
+     1.刪除資料前會先跟使用者做確認. 確認訊息為"你確定要刪除嗎?"
+     2.使用DropDownList 顯示10個單字，按下按鈕可以顯示後10個單字，或前10個單字.
+     3.點選DropDownList中的項目會顯示對應的中文解釋，依次記錄在下方。換頁(按下前10個單字或後10個單字按鈕)後則清空，並呈現第一筆單字的英文中文對應及超連結。超連結只有在英文部份出現，會連至cambridge字典，方便使用者查詢該單字。
+     4.GridView刪除資料時會反應至DropDownList
+     5.按下"測驗去"按鈕後會進入測驗。測驗題目為最近在DropDownList中呈現的單字。題目會呈現中文解釋及英文首字元及底線提示有幾個字元。
+     6.會正確判斷答對或答錯，答錯時並提供正確答案。
+     7.答完題後會計算得分。
+     8.能顯示"結束"按鈕，點入後可正確結束程式。
+     9.能顯示"重玩"連結，點入後可正確重新執行。
+    </pre>
+
+
+    <h3>畫面展示</h3>
+    <pre>
+    1.
+    <img src="pp/1.png" />
+    2.
+    <img src="pp/2.png" />
+    <img src="pp/3.png" />
+    3.
+    <img src="pp/4.png" />
+    點連結
+    <img src="pp/5.png" />
+    按NextButton
+    <img src="pp/6.png" />
+    4.
+    刪除rebellious
+    <img src="pp/1.png" />
+    <img src="pp/7.png" />
+    rebellious不見了
+    <img src="pp/8.png" />
+    5.
+    <img src="pp/9.png" />
+    6.
+    答錯
+    <img src="pp/10.png" />
+    答對
+    <img src="pp/11.png" />
+    7.
+    <img src="pp/12.png" />
+    8.
+    按結束按紐
+    <img src="pp/13.png" />
+    9.
+    按重玩會回到一開始
+    <img src="pp/14.png" />
+
+    </pre>
+
+    <h2>個人心得與反思</h2>
+    在這裡，你可以分享你對於這次開發經驗的感想，以及你從中學到了什麼。
+    <h3>學習心得</h3>
+    透過這次功課，覺得程式好難，但也學到很多方法
+    <h3>未來展望</h3>
+    未來會再加油
